@@ -1,9 +1,9 @@
 #!/usr/bin/env perl 
 #===============================================================================
 #
-#         FILE: check_mssql_uptime.pl
+#         FILE: check_mssql_log_space_usage.pl
 #
-#        USAGE: ./check_mssql_uptime.pl  
+#        USAGE: ./check_mssql_log_space_usage.pl  
 #
 #  DESCRIPTION: Checks multiple mssql tablespaces
 #
@@ -98,9 +98,11 @@ GetOptions(\%Options,
     'A:s',  'authfile:s',
     'D:s',  'db:s',
     'P:i',  'port:i',
+    'W:s',  'warning:s',
     'C:s',  'critical:s',
             'odbc-string:s',      #
-            'timezone:s',      #
+            'free',      #
+            'used',      #
             'username:s',      #
             'password:s',      #
 );
@@ -109,7 +111,7 @@ GetOptions(\%Options,
 # PARSE OPTIONS
 #===============================================================================
 
-my $ParseOptions = 'MssqlUptime::ParseOptions';
+my $ParseOptions = 'MssqlLogSpaceUsage::ParseOptions';
 load $ParseOptions;
 $ParseOptions = $ParseOptions->new();
 %Options = $ParseOptions->parse(\%Options);
@@ -119,7 +121,7 @@ $ParseOptions = $ParseOptions->new();
 # SQL
 #===============================================================================
 
-my $SQL = 'MssqlUptime::SQL';
+my $SQL = 'MssqlLogSpaceUsage::SQL';
 load $SQL;
 $SQL = $SQL->new();
 %Options = $SQL->sql(\%Options);
@@ -150,74 +152,89 @@ my %NagiosStatus = (
 $Options{'nagios-msg'} = $NagiosStatus{0};
 $Options{'nagios-status'} = $NagiosStatus{'OK'};
 
+#'log_space_in_bytes_since_last_backup' => '102912',
+#'free_log_space_in_percent' => '72.60453',
+#'used_log_space_in_percent' => '27.39547',
+#'database_id' => 1,
+#'used_log_space_in_bytes' => '644096',
+#'total_log_size_in_bytes' => '2351104',
+#'free_log_space_in_bytes' => '1707008'
 
 
-use DateTime;
+foreach my $database_id (keys $Options{'MssqlLogSpaceUsage'} ){
 
-use integer;
-my $dt_NOW = DateTime->now();
-   $dt_NOW->set_time_zone( $Options{'timezone'} );
+	if ($Options{'used'}) {
 
-   # datum aufsplitten
-   #'sqlserver_start_time' => '2016-09-24 09:54:00.247'
+		    if ( $Options{'MssqlLogSpaceUsage'}{$database_id}{'used_log_space_in_percent'} >= $Options{'warning'} ) {
+				$Options{'nagios-msg'} = $NagiosStatus{1};
+				$Options{'nagios-status'} = $NagiosStatus{'WARNING'};
+			}  
+		    if ( $Options{'MssqlLogSpaceUsage'}{$database_id}{'used_log_space_in_percent'} >= $Options{'critical'} ) {
+				$Options{'nagios-msg'} = $NagiosStatus{2};
+				$Options{'nagios-status'} = $NagiosStatus{'CRITICAL'};
+			}  
 
-   my @date_string = split(/[- :.]/,$Options{'MssqlUptime'}{'sqlserver_start_time'});
+	
+	}
+
+	if ($Options{'free'}) {
+
+		    if ( $Options{'MssqlLogSpaceUsage'}{$database_id}{'free_log_space_in_percent'} <= $Options{'warning'} ) {
+				$Options{'nagios-msg'} = $NagiosStatus{1};
+				$Options{'nagios-status'} = $NagiosStatus{'WARNING'};
+			}  
+		    if ( $Options{'MssqlLogSpaceUsage'}{$database_id}{'free_log_space_in_percent'} <= $Options{'critical'} ) {
+				$Options{'nagios-msg'} = $NagiosStatus{2};
+				$Options{'nagios-status'} = $NagiosStatus{'CRITICAL'};
+			}  
+
+	
+	}
+
+	# keep because of loop
+	$Options{'MssqlLogSpaceUsage'}{$database_id}{'nagios-msg'} = $Options{'nagios-msg'};
+
+}
 
 
-   # 0 -> 2016
-   # 1 -> 09
-   # 2 -> 24
-   # 3 -> 09
-   # 4 -> 54
-   # 5 -> 00
 
-   # replace 0
-   $date_string[0] =~ s/^0//g;
-   $date_string[1] =~ s/^0//g;
-   $date_string[2] =~ s/^0//g;
-   $date_string[3] =~ s/^0//g;
-   $date_string[4] =~ s/^0//g;
-   $date_string[5] =~ s/^0//g;
 
-   my $dt_THEN =  DateTime->new( 
-  	   year       => int($date_string[0]),
-       month      => int($date_string[1]),
-	   day        => int($date_string[2]),
-	   hour       => int($date_string[3]),
-	   minute     => int($date_string[4]),
-	   second     => int($date_string[5]),
-   );
 
-   $dt_THEN->set_time_zone( $Options{'timezone'} );
+print "$Options{'nagios-msg'}" . "\n";
 
-   my $dt_duration = $dt_NOW->subtract_datetime_absolute($dt_THEN);
+if ($Options{'print-options'} eq "yes" ) {
+        print "\n";
+        print 'Options: ' ."\n\n";
+        foreach my $option (keys(%Options)) {
+               next if ( $option =~ /password/ );
+			   if ( $option =~ /MssqlLogSpaceUsage/ ){
 
-   sub dhms
-   {
-	   my $s = shift;
-	   my $d = int($s/86400);
-	   $s -= $d*86400;
-	   my $h = int($s/3600);
-	   $s -= $h*3600;
-	   my $m = int($s/60);
-	   $s -= $m*60;
-	   return ($d,$h,$m,$s);
-   }
+				foreach my $database_id (keys $Options{'MssqlLogSpaceUsage'} ) {
+				   print "database_id => $database_id " . "\n";
+				   foreach my $sub (keys $Options{'MssqlLogSpaceUsage'}{$database_id} ) {
+					   print "\t$sub => $Options{'MssqlLogSpaceUsage'}{$database_id}{$sub}" . "\n";
+				   }
+				}
+			    
+			} else {
+                   print "$option => $Options{$option}" . "\n";
+			}
+        }
+}
 
-   $dt_duration = sprintf "%dd %02d:%02d:%02d",&dhms($dt_duration->seconds);
 
-print "$Options{'nagios-msg'} - $dt_duration" . "\n";
+
 exit($Options{'nagios-status'});
 
 __END__
 
 =head1 NAME
 
-check_mssql_uptime.pl 
+check_mssql_log_space_usage.pl 
 
 =head1 SYNOPSIS
 
-./check_mssql_uptime.pl 
+./check_mssql_log_space_usage.pl 
 
 =head1 DESCRIPTION
 

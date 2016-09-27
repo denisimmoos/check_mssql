@@ -1,11 +1,11 @@
-package MssqlUptime::ParseOptions;
+package MssqlLogSpaceUsage::ParseOptions;
 
 #===============================================================================
 #
 #         FILE: ParseOptions.pm
-#      PACKAGE: MssqlUptime::ParseOptions
+#      PACKAGE: MssqlLogSpaceUsage::ParseOptions
 #
-#  DESCRIPTION: ParseOptions for MssqlUptime
+#  DESCRIPTION: ParseOptions for MssqlLogSpaceUsage
 #
 #        FILES: ---
 #         BUGS: ---
@@ -77,6 +77,41 @@ sub parse {
 	if ($Options{'P'}) { $Options{'port'} = $Options{'P'} };
 	if ($Options{'port'}) { $Options{'P'} = $Options{'port'} };
 	&verbose($caller,'$Options{port} = ' . $Options{'port'}  ) if ( $Options{'v'} or $Options{'verbose'} ); 
+
+	#
+	# free /used
+	#
+	&error($caller,'$Options{free} or $Options{used} must be defined') if not ( $Options{'free'} or $Options{'used'} );
+	&error($caller,'Eighter $Options{free} or $Options{used} can be defined') if ( defined($Options{'free'}) and defined($Options{'used'}));
+
+
+    # 
+	# warning
+	#
+	&error($caller,'$Options{warning} must be defined') if not ( $Options{'W'} or $Options{'warning'} ); 
+	if ($Options{'W'}) { $Options{'warning'} = $Options{'W'} };
+	if ($Options{'warning'}) { $Options{'W'} = $Options{'warning'} };
+	&verbose($caller,'$Options{warning} = ' . $Options{'warning'}  ) if ( $Options{'v'} or $Options{'verbose'} ); 
+
+    # 
+	# critical
+	#
+	&error($caller,'$Options{critical} must be defined') if not ( $Options{'C'} or $Options{'critical'} ); 
+	if ($Options{'C'}) { $Options{'critical'} = $Options{'C'} };
+	if ($Options{'critical'}) { $Options{'C'} = $Options{'critical'} };
+	&verbose($caller,'$Options{critical} = ' . $Options{'critical'}  ) if ( $Options{'v'} or $Options{'verbose'} ); 
+
+	&error($caller,'$Options{critical} must be lower or equal 100') if ( $Options{'critical'} > 100 ); 
+	&error($caller,'$Options{warning} must be lower or equal 100') if ( $Options{'warning'} > 100 ); 
+
+    # warnings critical
+	if ( $Options{'used'}) {
+		&error($caller,'$Options{warning} must be lower than $Options{critical}') if ( $Options{'warning'} > $Options{'critical'}  ); 
+	}
+	if ( $Options{'free'}) {
+		&error($caller,'$Options{warning} must be greater than $Options{critical}') if ( $Options{'warning'} < $Options{'critical'}  ); 
+	}
+	
 	
 	#
 	# authfile
@@ -125,13 +160,13 @@ __END__
 
 =head1 NAME
 
-MssqlUptime::ParseOptions - ParseOptions for MssqlUptime 
+MssqlLogSpaceUsage::ParseOptions - ParseOptions for MssqlLogSpaceUsage 
 
 =head1 SYNOPSIS
 
-use MssqlUptime::ParseOptions;
+use MssqlLogSpaceUsage::ParseOptions;
 
-my $object = MssqlUptime::ParseOptions->new();
+my $object = MssqlLogSpaceUsage::ParseOptions->new();
 
 my %HASH = $object->parse(\%HASH);
 
