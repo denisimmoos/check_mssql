@@ -56,6 +56,8 @@ database_id => 1
         free_log_space_in_bytes => 1663488
 </pre>
 
+## ./check_mssql_options.pl
+
 ./check_mssql_options.pl --host='10.122.4.108' --db=master --port=60900 --auth=../auth.file  --options="is_auto_create_stats_on:1,is_auto_update_stats_on:1"
 
 <pre>
