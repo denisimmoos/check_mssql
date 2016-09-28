@@ -38,9 +38,9 @@ use Data::Dumper;
 #===============================================================================
 
 my %Options = ();
-$Options{'print-options'} = "yes";
+$Options{'print-options'} = 1;
 $Options{'odbc-string'} = 'ODBC Driver 11 for SQL Server';
-$Options{'timezone'} = 'Europe/Zurich';
+$Options{'perfdata'} = 1;
 
 #===============================================================================
 # SYGNALS - to syslog
@@ -101,6 +101,8 @@ GetOptions(\%Options,
     'W:s',  'warning:s',
     'C:s',  'critical:s',
             'odbc-string:s',      #
+            'perfdata:i',      #
+            'print-options:i',      #
             'free',      #
             'used',      #
             'username:s',      #
@@ -161,6 +163,7 @@ $Options{'nagios-status'} = $NagiosStatus{'OK'};
 #'free_log_space_in_bytes' => '1707008'
 
 
+my $perfdata;
 foreach my $database_id (keys $Options{'MssqlLogSpaceUsage'} ){
 
 	if ($Options{'used'}) {
@@ -173,6 +176,11 @@ foreach my $database_id (keys $Options{'MssqlLogSpaceUsage'} ){
 				$Options{'nagios-msg'} = $NagiosStatus{2};
 				$Options{'nagios-status'} = $NagiosStatus{'CRITICAL'};
 			}  
+                
+			# performanc data
+			$perfdata .= "${database_id}_used_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_id}{'used_log_space_in_bytes'},";
+	        $perfdata .= "${database_id}_free_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_id}{'free_log_space_in_bytes'},";
+			$perfdata .= "${database_id}_percent_used=$Options{'MssqlLogSpaceUsage'}{$database_id}{'used_log_space_in_percent'};$Options{'warning'};$Options{'critical'};0;100";
 
 	
 	}
@@ -189,29 +197,38 @@ foreach my $database_id (keys $Options{'MssqlLogSpaceUsage'} ){
 			}  
 
 	
-	}
+			#performance data
+			$perfdata .= "${database_id}_used_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_id}{'used_log_space_in_bytes'},";
+	        $perfdata .= "${database_id}_free_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_id}{'free_log_space_in_bytes'},";
+			$perfdata .= "${database_id}_percent_free=$Options{'MssqlLogSpaceUsage'}{$database_id}{'free_log_space_in_percent'};$Options{'warning'};$Options{'critical'};0;100";
 
-	# keep because of loop
-	$Options{'MssqlLogSpaceUsage'}{$database_id}{'nagios-msg'} = $Options{'nagios-msg'};
+
+	}
 
 }
 
+#
+# output
+#
+my $out_perfdata ='';
+if ( $Options{'perfdata'} ){
+	$out_perfdata = "| $perfdata";
+}
 
+print "$Options{'nagios-msg'} $out_perfdata" . "\n";
 
-
-
-print "$Options{'nagios-msg'}" . "\n";
-
-if ($Options{'print-options'} eq "yes" ) {
+if ($Options{'print-options'} ) {
         print "\n";
         print 'Options: ' ."\n\n";
         foreach my $option (keys(%Options)) {
                next if ( $option =~ /password/ );
+               next if ( $option =~ /^[a-zA-Z]$/ );
 			   if ( $option =~ /MssqlLogSpaceUsage/ ){
 
 				foreach my $database_id (keys $Options{'MssqlLogSpaceUsage'} ) {
 				   print "database_id => $database_id " . "\n";
 				   foreach my $sub (keys $Options{'MssqlLogSpaceUsage'}{$database_id} ) {
+					   next if ($sub =~ /database_id/);
 					   print "\t$sub => $Options{'MssqlLogSpaceUsage'}{$database_id}{$sub}" . "\n";
 				   }
 				}

@@ -50,6 +50,8 @@ sub parse {
 
 
 	foreach my $opt (keys(%Options)) {
+		next if ($opt =~ /print-options/);
+		next if ($opt =~ /perfdata/);
 		&error($caller,'$Options{' . $opt . '} not defined') if not ($Options{$opt}); 
 	    &verbose($caller,'$Options{' . $opt . '} defined') if ( $Options{'v'} or $Options{'verbose'} ); 
 	}
