@@ -1,9 +1,9 @@
 #!/usr/bin/env perl 
 #===============================================================================
 #
-#         FILE: check_mssql_options.pl
+#         FILE: check_mssql_auto_file_growth.pl
 #
-#        USAGE: ./check_mssql_options.pl  
+#        USAGE: ./check_mssql_auto_file_growth.pl  
 #
 #  DESCRIPTION: Checks multiple mssql tablespaces
 #
@@ -97,7 +97,6 @@ GetOptions(\%Options,
     'A:s',  'authfile:s',
     'D:s',  'db:s',
     'P:i',  'port:i',
-    'O:s',  'options:s',
             'odbc-string:s',      #
             'print-options:i',      #
             'username:s',      #
@@ -108,7 +107,7 @@ GetOptions(\%Options,
 # PARSE OPTIONS
 #===============================================================================
 
-my $ParseOptions = 'MssqlOptions::ParseOptions';
+my $ParseOptions = 'MssqlAutoFileGrowth::ParseOptions';
 load $ParseOptions;
 $ParseOptions = $ParseOptions->new();
 %Options = $ParseOptions->parse(\%Options);
@@ -118,7 +117,7 @@ $ParseOptions = $ParseOptions->new();
 # SQL
 #===============================================================================
 
-my $SQL = 'MssqlOptions::SQL';
+my $SQL = 'MssqlAutoFileGrowth::SQL';
 load $SQL;
 $SQL = $SQL->new();
 %Options = $SQL->sql(\%Options);
@@ -143,29 +142,52 @@ my %NagiosStatus = (
     3       => 'UNKNOWN',
 );
 
-my @Options= split(/,/,$Options{'options'});
-my $key;
-my $value;
-my @CRITICAL = ();
-
-foreach my $option (@Options) {
+my @CRITICAL;
+my $msg;
+my $status;
 
 
-	($key,$value)= split(/\:/,$option);
+foreach my $db (keys $Options{MssqlAutoFileGrowth}) {
+  foreach my $file (keys $Options{MssqlAutoFileGrowth}{$db}) {
+       
+	   # default
+	   $msg = $NagiosStatus{0};
 
-	if ( not exists( $Options{'MssqlOptions'}{$key}) ){
-		$Options{'nagios-msg'} = $NagiosStatus{2} . " - [$key] not valid";
-		$Options{'nagios-status'} = $NagiosStatus{'CRITICAL'};
-		die "$Options{'nagios-msg'}" . "\n";
-	}
+	   # Bei type_desc = LOG: max_size = -1 oder max_size = 268435456
 
-	if ( $Options{'MssqlOptions'}{$key} ne $value ) {
-		push(@CRITICAL,1);
-		$Options{'nagios-msg'} .= "\n" . $NagiosStatus{2} . " - [$key] != [$value]";
-	} else {
-		$Options{'nagios-msg'} .= "\n" . $NagiosStatus{0} . " - [$key] == [$value]";
-	}	
+	   if ( $Options{MssqlAutoFileGrowth}{$db}{$file}{'type_desc'} eq 'LOG' ) {
+		   if ( not (
+			        ($Options{MssqlAutoFileGrowth}{$db}{$file}{'max_size'} eq '-1') or ($Options{MssqlAutoFileGrowth}{$db}{$file}{'max_size'} eq '268435456')
+		       )
+		   ) {
+			   push(@CRITICAL,1);
+			   $msg = $NagiosStatus{2};
+		   }
+	   } 
+	   
+	   # Bei type_desc = ROWS: max_size = -1
+	   if ( $Options{MssqlAutoFileGrowth}{$db}{$file}{'type_desc'} eq 'ROWS' ) {
 
+		   if ($Options{MssqlAutoFileGrowth}{$db}{$file}{'max_size'} ne '-1') {
+			   push(@CRITICAL,1);
+			   $msg = $NagiosStatus{2};
+
+		   }
+
+	   } 
+
+	   # message
+       $Options{'nagios-msg'} .= "\n" . $msg . " ";
+	   $Options{'nagios-msg'} .= "\n\t" . "database_id       => $Options{MssqlAutoFileGrowth}{$db}{$file}{'database_id'}";
+	   $Options{'nagios-msg'} .= "\n\t" . "db_name           => $Options{MssqlAutoFileGrowth}{$db}{$file}{'db_name'}";
+	   $Options{'nagios-msg'} .= "\n\t" . "file_id           => $Options{MssqlAutoFileGrowth}{$db}{$file}{'file_id'}";
+	   $Options{'nagios-msg'} .= "\n\t" . "file_name         => $Options{MssqlAutoFileGrowth}{$db}{$file}{'file_name'}";
+	   $Options{'nagios-msg'} .= "\n\t" . "type_desc         => $Options{MssqlAutoFileGrowth}{$db}{$file}{'type_desc'}";
+	   $Options{'nagios-msg'} .= "\n\t" . "size              => $Options{MssqlAutoFileGrowth}{$db}{$file}{'size'}";
+	   $Options{'nagios-msg'} .= "\n\t" . "max_size          => $Options{MssqlAutoFileGrowth}{$db}{$file}{'max_size'}";
+	   $Options{'nagios-msg'} .= "\n\t" . "growth            => $Options{MssqlAutoFileGrowth}{$db}{$file}{'growth'}";
+	   $Options{'nagios-msg'} .= "\n\t" . "is_percent_growth => $Options{MssqlAutoFileGrowth}{$db}{$file}{'is_percent_growth'}";
+  }
 }
 
 #
@@ -187,10 +209,10 @@ if ($Options{'print-options'} ) {
                next if ( $option =~ /password/ );
                next if ( $option =~ /^[a-zA-Z]$/ );
 
-               if ( $option =~ /MssqlOptions/ ){
-                   foreach my $sub (keys $Options{'MssqlOptions'} ) {
-					   if($Options{'MssqlOptions'}{$sub}) {
-                          print "$sub => $Options{'MssqlOptions'}{$sub}" . "\n";
+               if ( $option =~ /MssqlAutoFileGrowth/ ){
+                   foreach my $sub (keys $Options{'MssqlAutoFileGrowth'} ) {
+					   if($Options{'MssqlAutoFileGrowth'}{$sub}) {
+                          print "$sub => $Options{'MssqlAutoFileGrowth'}{$sub}" . "\n";
 					   
 					   } else {
                           print "$sub =>  undef" . "\n";
@@ -202,18 +224,18 @@ if ($Options{'print-options'} ) {
         }
 }
 
-
+# exit
 exit($Options{'nagios-status'});
 
 __END__
 
 =head1 NAME
 
-check_mssql_options.pl 
+check_mssql_auto_file_growth.pl 
 
 =head1 SYNOPSIS
 
-./check_mssql_options.pl 
+./check_mssql_auto_file_growth.pl 
 
 =head1 DESCRIPTION
 
