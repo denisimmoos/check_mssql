@@ -55,7 +55,7 @@ sub sql {
 
 	my $sql = "
 	SELECT * 
-	FROM [master].[sys].[databases]
+	FROM [$Options{'db'}].[sys].[databases]
 	";
 
 	my $dbh = DBI->connect("dbi:ODBC:driver=$Options{'odbc-string'};server=tcp:$Options{'hostname'},$Options{'port'};database=$Options{'db'};MARS_Connection=yes;", $Options{'username'}, $Options{'password'} )
