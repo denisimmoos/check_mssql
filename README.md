@@ -1,4 +1,7 @@
 # check_mssql
+## Information
+For this to work you need to install unixODBC(http://www.unixodbc.org/) and Perl DBD::ODBC (http://search.cpan.org/~mjevans/DBD-ODBC-1.52/ODBC.pm) and the Microsoft ODBC Driver (https://www.microsoft.com/en-us/download/details.aspx?id=36437)
+
 ## check_mssql_uptime.pl
 ./check_mssql_uptime.pl --host='10.122.4.108' --db=master --port=60900 --auth=../auth.file
 
