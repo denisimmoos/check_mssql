@@ -5,7 +5,7 @@
 #
 #        USAGE: ./check_mssql_auto_file_growth.pl  
 #
-#  DESCRIPTION: Checks multiple mssql tablespaces
+#  DESCRIPTION: Checks in mssql if auto_file_growth is enabled 
 #
 #      OPTIONS: ---
 # REQUIREMENTS: ---
@@ -14,7 +14,7 @@
 #       AUTHOR: Denis Immoos (<denisimmoos@gmail.com>)
 #    AUTHORREF: Senior Linux System Administrator (LPIC3)
 #      VERSION: 1.0
-#      CREATED: 01/20/2016 09:26:28 AM
+#      CREATED: 09/29/2016
 #     REVISION: ---
 #===============================================================================
 

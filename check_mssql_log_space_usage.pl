@@ -5,7 +5,7 @@
 #
 #        USAGE: ./check_mssql_log_space_usage.pl  
 #
-#  DESCRIPTION: Checks multiple mssql tablespaces
+#  DESCRIPTION: Checks mssql log space usage
 #
 #      OPTIONS: ---
 # REQUIREMENTS: ---

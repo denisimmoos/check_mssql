@@ -5,7 +5,7 @@
 #
 #        USAGE: ./check_mssql_uptime.pl  
 #
-#  DESCRIPTION: Checks multiple mssql tablespaces
+#  DESCRIPTION: Checks mssql uptime
 #
 #      OPTIONS: ---
 # REQUIREMENTS: ---
@@ -14,7 +14,7 @@
 #       AUTHOR: Denis Immoos (<denisimmoos@gmail.com>)
 #    AUTHORREF: Senior Linux System Administrator (LPIC3)
 #      VERSION: 1.0
-#      CREATED: 01/20/2016 09:26:28 AM
+#      CREATED: 09/29/2016 
 #     REVISION: ---
 #===============================================================================
 
@@ -38,7 +38,6 @@ use Data::Dumper;
 #===============================================================================
 
 my %Options = ();
-$Options{'print-options'} = "yes";
 $Options{'odbc-string'} = 'ODBC Driver 11 for SQL Server';
 $Options{'timezone'} = 'Europe/Zurich';
 
