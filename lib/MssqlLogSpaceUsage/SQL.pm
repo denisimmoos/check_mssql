@@ -51,6 +51,7 @@ sub sql {
     my %Options = %{ $ref_Options };
     my $caller = (caller(0))[3];
 
+	#use Data::Dumper;
 
 	my $sql = "
 	       SELECT 
@@ -69,10 +70,9 @@ sub sql {
 
     my $sth = $dbh->prepare($sql);
        $sth->execute;
-	   use Data::Dumper;
 	while ( my $row = $sth->fetchrow_hashref ) {
 		$Options{'MssqlLogSpaceUsage'}{$row->{'database_id'}} = $row;
-		print Dumper($Options{'MssqlLogSpaceUsage'});
+		#print Dumper($Options{'MssqlLogSpaceUsage'});
 	}
 	
 	return  %Options;
