@@ -55,3 +55,98 @@ database_id => 1
         total_log_size_in_bytes => 2351104
         free_log_space_in_bytes => 1663488
 </pre>
+
+./check_mssql_options.pl --host='10.122.4.108' --db=master --port=60900 --auth=../auth.file  --options="is_auto_create_stats_on:1,is_auto_update_stats_on:1"
+
+<pre>
+OK
+
+OK - [is_auto_create_stats_on] == [1]
+OK - [is_auto_update_stats_on] == [1]
+</pre>
+
+./check_mssql_options.pl --host='10.122.4.108' --db=master --port=60900 --auth=../auth.file  --options="is_auto_create_stats_on:1,is_auto_update_stats_on:1" -v
+
+<pre>
+$VAR1 = {
+          'is_sync_with_backup' => '0',
+          'recovery_model' => '3',
+          'default_fulltext_language_name' => undef,
+          'is_read_committed_snapshot_on' => '0',
+          'snapshot_isolation_state' => '0',
+          'is_in_standby' => '0',
+          'is_quoted_identifier_on' => '0',
+          'log_reuse_wait_desc' => 'NOTHING',
+          'name' => 'ECM',
+          'default_fulltext_language_lcid' => undef,
+          'owner_sid' => '',
+          'resource_pool_id' => undef,
+          'is_numeric_roundabort_on' => '0',
+          'is_local_cursor_default' => '0',
+          'is_ansi_warnings_on' => '0',
+          'is_ansi_null_default_on' => '0',
+          'is_subscribed' => '0',
+          'is_query_store_on' => '0',
+          'is_honor_broker_priority_on' => '0',
+          'is_trustworthy_on' => '0',
+          'is_parameterization_forced' => '0',
+          'two_digit_year_cutoff' => undef,
+          'is_date_correlation_on' => '0',
+          'is_recursive_triggers_on' => '0',
+          'database_id' => 5,
+          'is_nested_triggers_on' => undef,
+          'is_read_only' => '0',
+          'log_reuse_wait' => '0',
+          'create_date' => '2016-08-19 12:12:34.370',
+          'user_access' => '0',
+          'is_auto_close_on' => '0',
+          'delayed_durability' => 0,
+          'is_memory_optimized_elevate_to_snapshot_on' => '0',
+          'is_supplemental_logging_enabled' => '0',
+          'is_concat_null_yields_null_on' => '0',
+          'is_transform_noise_words_on' => undef,
+          'is_auto_create_stats_on' => '1',
+          'state' => '0',
+          'page_verify_option_desc' => 'CHECKSUM',
+          'is_cursor_close_on_commit_on' => '0',
+          'service_broker_guid' => 'CD7E7ADE-EA68-48DF-86B9-BD610F23A78D',
+          'user_access_desc' => 'MULTI_USER',
+          'is_encrypted' => '0',
+          'is_master_key_encrypted_by_server' => '0',
+          'containment' => '0',
+          'compatibility_level' => '120',
+          'is_cleanly_shutdown' => '0',
+          'is_arithabort_on' => '0',
+          'source_database_id' => undef,
+          'is_merge_published' => '0',
+          'is_fulltext_enabled' => '1',
+          'collation_name' => 'SQL_Latin1_General_CP850_BIN2',
+          'is_auto_shrink_on' => '0',
+          'page_verify_option' => '2',
+          'is_auto_create_stats_incremental_on' => '0',
+          'delayed_durability_desc' => 'DISABLED',
+          'group_database_id' => undef,
+          'is_broker_enabled' => '1',
+          'state_desc' => 'ONLINE',
+          'is_db_chaining_on' => '0',
+          'is_auto_update_stats_on' => '1',
+          'snapshot_isolation_state_desc' => 'OFF',
+          'is_distributor' => '0',
+          'is_ansi_padding_on' => '0',
+          'is_auto_update_stats_async_on' => '1',
+          'recovery_model_desc' => 'SIMPLE',
+          'is_cdc_enabled' => '0',
+          'default_language_lcid' => undef,
+          'replica_id' => undef,
+          'default_language_name' => undef,
+          'containment_desc' => 'NONE',
+          'is_ansi_nulls_on' => '1',
+          'is_published' => '0',
+          'target_recovery_time_in_seconds' => 0
+        };
+OK
+
+OK - [is_auto_create_stats_on] == [1]
+OK - [is_auto_update_stats_on] == [1]
+
+</pre>
