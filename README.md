@@ -321,3 +321,10 @@ OK
         growth            => 7680
         is_percent_growth => 0
 </pre>
+
+./check_mssql_auto_file_growth.pl --host='10.122.4.108' --db=master --port=60900 --auth=../auth.file  --only-critical=1
+
+<pre>
+OK
+</pre>
+

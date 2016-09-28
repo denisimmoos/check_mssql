@@ -39,6 +39,7 @@ use Data::Dumper;
 
 my %Options = ();
 $Options{'print-options'} = 0;
+$Options{'only-critical'} = 0;
 $Options{'odbc-string'} = 'ODBC Driver 11 for SQL Server';
 
 #===============================================================================
@@ -99,6 +100,7 @@ GetOptions(\%Options,
     'P:i',  'port:i',
             'odbc-string:s',      #
             'print-options:i',      #
+            'only-critical:i',      #
             'username:s',      #
             'password:s',      #
 );
@@ -176,17 +178,24 @@ foreach my $db (keys $Options{MssqlAutoFileGrowth}) {
 
 	   } 
 
+	   # 
 	   # message
-       $Options{'nagios-msg'} .= "\n" . $msg . " ";
-	   $Options{'nagios-msg'} .= "\n\t" . "database_id       => $Options{MssqlAutoFileGrowth}{$db}{$file}{'database_id'}";
-	   $Options{'nagios-msg'} .= "\n\t" . "db_name           => $Options{MssqlAutoFileGrowth}{$db}{$file}{'db_name'}";
-	   $Options{'nagios-msg'} .= "\n\t" . "file_id           => $Options{MssqlAutoFileGrowth}{$db}{$file}{'file_id'}";
-	   $Options{'nagios-msg'} .= "\n\t" . "file_name         => $Options{MssqlAutoFileGrowth}{$db}{$file}{'file_name'}";
-	   $Options{'nagios-msg'} .= "\n\t" . "type_desc         => $Options{MssqlAutoFileGrowth}{$db}{$file}{'type_desc'}";
-	   $Options{'nagios-msg'} .= "\n\t" . "size              => $Options{MssqlAutoFileGrowth}{$db}{$file}{'size'}";
-	   $Options{'nagios-msg'} .= "\n\t" . "max_size          => $Options{MssqlAutoFileGrowth}{$db}{$file}{'max_size'}";
-	   $Options{'nagios-msg'} .= "\n\t" . "growth            => $Options{MssqlAutoFileGrowth}{$db}{$file}{'growth'}";
-	   $Options{'nagios-msg'} .= "\n\t" . "is_percent_growth => $Options{MssqlAutoFileGrowth}{$db}{$file}{'is_percent_growth'}";
+	   #
+	   if ( $msg eq 'OK'  and $Options{'only-critical'} ) {
+		   $Options{'nagios-msg'} .= "";
+	   } else {
+		   $Options{'nagios-msg'} .= "\n" . $msg . " ";
+		   $Options{'nagios-msg'} .= "\n\t" . "database_id       => $Options{MssqlAutoFileGrowth}{$db}{$file}{'database_id'}";
+		   $Options{'nagios-msg'} .= "\n\t" . "db_name           => $Options{MssqlAutoFileGrowth}{$db}{$file}{'db_name'}";
+		   $Options{'nagios-msg'} .= "\n\t" . "file_id           => $Options{MssqlAutoFileGrowth}{$db}{$file}{'file_id'}";
+		   $Options{'nagios-msg'} .= "\n\t" . "file_name         => $Options{MssqlAutoFileGrowth}{$db}{$file}{'file_name'}";
+		   $Options{'nagios-msg'} .= "\n\t" . "type_desc         => $Options{MssqlAutoFileGrowth}{$db}{$file}{'type_desc'}";
+		   $Options{'nagios-msg'} .= "\n\t" . "size              => $Options{MssqlAutoFileGrowth}{$db}{$file}{'size'}";
+		   $Options{'nagios-msg'} .= "\n\t" . "max_size          => $Options{MssqlAutoFileGrowth}{$db}{$file}{'max_size'}";
+		   $Options{'nagios-msg'} .= "\n\t" . "growth            => $Options{MssqlAutoFileGrowth}{$db}{$file}{'growth'}";
+		   $Options{'nagios-msg'} .= "\n\t" . "is_percent_growth => $Options{MssqlAutoFileGrowth}{$db}{$file}{'is_percent_growth'}";
+	   }
+
   }
 }
 
@@ -198,7 +207,7 @@ if(@CRITICAL) {
     print "CRITICAL\n" . $Options{'nagios-msg'} . "\n";
 	$Options{'nagios-status'} = $NagiosStatus{'CRITICAL'};
 } else {
-    print "OK\n" . $Options{'nagios-msg'} . "\n";
+    print "OK" . $Options{'nagios-msg'} . "\n";
 	$Options{'nagios-status'} = $NagiosStatus{'OK'};
 }
 
