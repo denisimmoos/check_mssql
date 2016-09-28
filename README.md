@@ -2,4 +2,6 @@
 ## check_mssql_uptime.pl
 ./check_mssql_uptime.pl --host='10.122.4.108' --db=master --port=60900 --auth=../auth.file
 
- OK - 4d 00:08:54
+<pre>
+OK - 4d 00:08:54
+</pre>
