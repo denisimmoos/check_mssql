@@ -152,3 +152,172 @@ OK - [is_auto_create_stats_on] == [1]
 OK - [is_auto_update_stats_on] == [1]
 
 </pre>
+
+##  ./check_mssql_auto_file_growth.pl 
+
+./check_mssql_auto_file_growth.pl --host='10.122.4.108' --db=master --port=60900 --auth=../auth.file
+
+</pre>
+OK
+
+OK
+        database_id       => 4
+        db_name           => msdb
+        file_id           => 1
+        file_name         => MSDBData
+        type_desc         => ROWS
+        size              => 2416
+        max_size          => -1
+        growth            => 10
+        is_percent_growth => 1
+OK
+        database_id       => 4
+        db_name           => msdb
+        file_id           => 2
+        file_name         => MSDBLog
+        type_desc         => LOG
+        size              => 2512
+        max_size          => 268435456
+        growth            => 10
+        is_percent_growth => 1
+OK
+        database_id       => 1
+        db_name           => master
+        file_id           => 1
+        file_name         => master
+        type_desc         => ROWS
+        size              => 688
+        max_size          => -1
+        growth            => 10
+        is_percent_growth => 1
+OK
+        database_id       => 1
+        db_name           => master
+        file_id           => 2
+        file_name         => mastlog
+        type_desc         => LOG
+        size              => 288
+        max_size          => -1
+        growth            => 10
+        is_percent_growth => 1
+OK
+        database_id       => 3
+        db_name           => model
+        file_id           => 1
+        file_name         => modeldev
+        type_desc         => ROWS
+        size              => 536
+        max_size          => -1
+        growth            => 128
+        is_percent_growth => 0
+OK
+        database_id       => 3
+        db_name           => model
+        file_id           => 2
+        file_name         => modellog
+        type_desc         => LOG
+        size              => 128
+        max_size          => -1
+        growth            => 10
+        is_percent_growth => 1
+OK
+        database_id       => 2
+        db_name           => tempdb
+        file_id           => 4
+        file_name         => tempdev3
+        type_desc         => ROWS
+        size              => 12800
+        max_size          => -1
+        growth            => 10
+        is_percent_growth => 1
+OK
+        database_id       => 2
+        db_name           => tempdb
+        file_id           => 1
+        file_name         => tempdev
+        type_desc         => ROWS
+        size              => 12800
+        max_size          => -1
+        growth            => 10
+        is_percent_growth => 1
+OK
+        database_id       => 2
+        db_name           => tempdb
+        file_id           => 3
+        file_name         => tempdev2
+        type_desc         => ROWS
+        size              => 12800
+        max_size          => -1
+        growth            => 10
+        is_percent_growth => 1
+OK
+        database_id       => 2
+        db_name           => tempdb
+        file_id           => 2
+        file_name         => templog
+        type_desc         => LOG
+        size              => 2560
+        max_size          => -1
+        growth            => 10
+        is_percent_growth => 1
+OK
+        database_id       => 2
+        db_name           => tempdb
+        file_id           => 5
+        file_name         => tempdev4
+        type_desc         => ROWS
+        size              => 12800
+        max_size          => -1
+        growth            => 10
+        is_percent_growth => 1
+OK
+        database_id       => 5
+        db_name           => ECM
+        file_id           => 4
+        file_name         => ECMDATA3
+        type_desc         => ROWS
+        size              => 1661440
+        max_size          => -1
+        growth            => 7680
+        is_percent_growth => 0
+OK
+        database_id       => 5
+        db_name           => ECM
+        file_id           => 1
+        file_name         => ECMDATA1
+        type_desc         => ROWS
+        size              => 1661440
+        max_size          => -1
+        growth            => 7680
+        is_percent_growth => 0
+OK
+        database_id       => 5
+        db_name           => ECM
+        file_id           => 3
+        file_name         => ECMDATA2
+        type_desc         => ROWS
+        size              => 1661440
+        max_size          => -1
+        growth            => 7680
+        is_percent_growth => 0
+OK
+        database_id       => 5
+        db_name           => ECM
+        file_id           => 2
+        file_name         => ECMLOG1
+        type_desc         => LOG
+        size              => 271096
+        max_size          => 268435456
+        growth            => 10
+        is_percent_growth => 1
+OK
+        database_id       => 5
+        db_name           => ECM
+        file_id           => 5
+        file_name         => ECMDATA4
+        type_desc         => ROWS
+        size              => 1661440
+        max_size          => -1
+        growth            => 7680
+        is_percent_growth => 0
+</pre>
