@@ -58,6 +58,12 @@ sub sql {
 		[master].[sys].[databases].name
 		FROM [$Options{'db'}].[sys].[databases]
 	";
+
+	if ($Options{'exclude-db'}) {
+		my @exclude = split(/\,/,$Options{'exclude-db'});
+		my $exclude = join ',', map qq('$_'), @exclude;
+		$sql_databases .= "WHERE [master].[sys].[databases].name NOT IN ( $exclude )";
+	}
 				
 	my $sql;
 	my $sth;
@@ -69,8 +75,6 @@ sub sql {
     	my $sth_databases = $dbh->prepare($sql_databases);
        	$sth_databases->execute;
 
-
-	use Data::Dumper;
 	while ( my $row = $sth_databases->fetchrow_hashref ) {
 
 		

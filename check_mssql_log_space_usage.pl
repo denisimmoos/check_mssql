@@ -103,6 +103,7 @@ GetOptions(\%Options,
             'print-options:i',      #
             'free',      #
             'used',      #
+            'exclude-db:s',      #
             'username:s',      #
             'password:s',      #
 );
