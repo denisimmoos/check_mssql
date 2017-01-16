@@ -23,8 +23,7 @@ use warnings;
 use utf8;
 use POSIX qw{strftime};
 
-#use lib '/usr/lib64/nagios/plugins/check_mssql/lib';
-use lib '/home/monitor/check_mssql/lib';
+use lib '/opt/contrib/plugins/check_mssql/lib';
 
 #===============================================================================
 # MODULES
@@ -98,8 +97,7 @@ GetOptions(\%Options,
     'A:s',  'authfile:s',
     'D:s',  'db:s',
     'P:i',  'port:i',
-    'W:s',  'warning:s',
-    'C:s',  'critical:s',
+    'T:s',  'thresholds:s',
             'odbc-string:s',      #
             'perfdata:i',      #
             'print-options:i',      #
@@ -148,11 +146,6 @@ my %NagiosStatus = (
     3       => 'UNKNOWN',
 );
 
-#
-# defaults
-#
-$Options{'nagios-msg'} = $NagiosStatus{0};
-$Options{'nagios-status'} = $NagiosStatus{'OK'};
 
 #'log_space_in_bytes_since_last_backup' => '102912',
 #'free_log_space_in_percent' => '72.60453',
@@ -164,54 +157,92 @@ $Options{'nagios-status'} = $NagiosStatus{'OK'};
 
 
 my $perfdata;
-foreach my $database_id (keys $Options{'MssqlLogSpaceUsage'} ){
+my @warning;
+my @critical;
+foreach my $database_name (keys $Options{'MssqlLogSpaceUsage'} ){
+
+	#
+	# defaults
+	#
+	$Options{'nagios-msg'} = $NagiosStatus{0};
+	$Options{'nagios-status'} = $NagiosStatus{'OK'};
+
+
+	if ( $Options{'threshold'}{$database_name} ) {
+		$Options{'warning'} = $Options{'threshold'}{$database_name}{'warning'};
+		$Options{'critical'} = $Options{'threshold'}{$database_name}{'critical'};
+	} else {
+		$Options{'warning'} = $Options{'threshold'}{'DEFAULT'}{'warning'};
+		$Options{'critical'} = $Options{'threshold'}{'DEFAULT'}{'critical'};
+	}
+
+	$Options{'MssqlLogSpaceUsage'}{$database_name}{'warning'} = $Options{'warning'};
+	$Options{'MssqlLogSpaceUsage'}{$database_name}{'critical'} = $Options{'critical'};
 
 	if ($Options{'used'}) {
 
-		    if ( $Options{'MssqlLogSpaceUsage'}{$database_id}{'used_log_space_in_percent'} >= $Options{'warning'} ) {
+		    if ( $Options{'MssqlLogSpaceUsage'}{$database_name}{'used_log_space_in_percent'} >= $Options{'warning'} ) {
 				$Options{'nagios-msg'} = $NagiosStatus{1};
 				$Options{'nagios-status'} = $NagiosStatus{'WARNING'};
+				push(@warning,"1");
 			}  
-		    if ( $Options{'MssqlLogSpaceUsage'}{$database_id}{'used_log_space_in_percent'} >= $Options{'critical'} ) {
+		    if ( $Options{'MssqlLogSpaceUsage'}{$database_name}{'used_log_space_in_percent'} >= $Options{'critical'} ) {
 				$Options{'nagios-msg'} = $NagiosStatus{2};
 				$Options{'nagios-status'} = $NagiosStatus{'CRITICAL'};
+				push(@critical,"1");
 			}  
                 
 			# performanc data
-			$perfdata .= "${database_id}_used_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_id}{'used_log_space_in_bytes'},";
-	        $perfdata .= "${database_id}_free_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_id}{'free_log_space_in_bytes'},";
-			$perfdata .= "${database_id}_percent_used=$Options{'MssqlLogSpaceUsage'}{$database_id}{'used_log_space_in_percent'};$Options{'warning'};$Options{'critical'};0;100";
-
-	
+			$perfdata .= "${database_name}_used_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_name}{'used_log_space_in_bytes'}B, ";
+	        	$perfdata .= "${database_name}_free_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_name}{'free_log_space_in_bytes'}B, ";
+			$perfdata .= "${database_name}_percent_used=$Options{'MssqlLogSpaceUsage'}{$database_name}{'used_log_space_in_percent'};$Options{'warning'};$Options{'critical'};0;100, ";
 	}
 
 	if ($Options{'free'}) {
 
-		    if ( $Options{'MssqlLogSpaceUsage'}{$database_id}{'free_log_space_in_percent'} <= $Options{'warning'} ) {
+		    if ( $Options{'MssqlLogSpaceUsage'}{$database_name}{'free_log_space_in_percent'} <= $Options{'warning'} ) {
 				$Options{'nagios-msg'} = $NagiosStatus{1};
 				$Options{'nagios-status'} = $NagiosStatus{'WARNING'};
 			}  
-		    if ( $Options{'MssqlLogSpaceUsage'}{$database_id}{'free_log_space_in_percent'} <= $Options{'critical'} ) {
+		    if ( $Options{'MssqlLogSpaceUsage'}{$database_name}{'free_log_space_in_percent'} <= $Options{'critical'} ) {
 				$Options{'nagios-msg'} = $NagiosStatus{2};
 				$Options{'nagios-status'} = $NagiosStatus{'CRITICAL'};
 			}  
 
 	
 			#performance data
-			$perfdata .= "${database_id}_used_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_id}{'used_log_space_in_bytes'},";
-	        $perfdata .= "${database_id}_free_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_id}{'free_log_space_in_bytes'},";
-			$perfdata .= "${database_id}_percent_free=$Options{'MssqlLogSpaceUsage'}{$database_id}{'free_log_space_in_percent'};$Options{'warning'};$Options{'critical'};0;100";
-
+			$perfdata .= "${database_name}_used_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_name}{'used_log_space_in_bytes'}B, ";
+	        	$perfdata .= "${database_name}_free_log_space_in_bytes=$Options{'MssqlLogSpaceUsage'}{$database_name}{'free_log_space_in_bytes'}B, ";
+			$perfdata .= "${database_name}_percent_free=$Options{'MssqlLogSpaceUsage'}{$database_name}{'free_log_space_in_percent'};$Options{'warning'};$Options{'critical'};0;100, ";
 
 	}
 
+	$Options{'MssqlLogSpaceUsage'}{$database_name}{'nagios-msg'} = $Options{'nagios-msg'};
+	$Options{'MssqlLogSpaceUsage'}{$database_name}{'nagios-status'} = $Options{'nagios-status'};
+
 }
+
+# count em
+
+if (@warning) {
+	$Options{'nagios-msg'} = $NagiosStatus{1};
+	$Options{'nagios-status'} = $NagiosStatus{'WARNING'};
+}
+if (@critical) {
+	$Options{'nagios-msg'} = $NagiosStatus{2};
+	$Options{'nagios-status'} = $NagiosStatus{'CRITICAL'};
+}
+
+
 
 #
 # output
 #
 my $out_perfdata ='';
 if ( $Options{'perfdata'} ){
+	# remove last ,
+	chop $perfdata;
+	chop $perfdata;
 	$out_perfdata = "| $perfdata";
 }
 
@@ -223,13 +254,16 @@ if ($Options{'print-options'} ) {
         foreach my $option (keys(%Options)) {
                next if ( $option =~ /password/ );
                next if ( $option =~ /^[a-zA-Z]$/ );
+	       next if ( $option =~ /threshold/ );
+	       next if ( $option =~ /critical/ );
+	       next if ( $option =~ /warning/ );
 			   if ( $option =~ /MssqlLogSpaceUsage/ ){
 
-				foreach my $database_id (keys $Options{'MssqlLogSpaceUsage'} ) {
-				   print "database_id => $database_id " . "\n";
-				   foreach my $sub (keys $Options{'MssqlLogSpaceUsage'}{$database_id} ) {
-					   next if ($sub =~ /database_id/);
-					   print "\t$sub => $Options{'MssqlLogSpaceUsage'}{$database_id}{$sub}" . "\n";
+				foreach my $database_name (keys $Options{'MssqlLogSpaceUsage'} ) {
+				   print "database_name => $database_name " . "\n";
+				   foreach my $sub (keys $Options{'MssqlLogSpaceUsage'}{$database_name} ) {
+					   #next if ($sub =~ /database_id/);
+					   print "\t$sub => $Options{'MssqlLogSpaceUsage'}{$database_name}{$sub}" . "\n";
 				   }
 				}
 			    

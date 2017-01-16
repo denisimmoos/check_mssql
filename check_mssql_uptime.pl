@@ -23,8 +23,7 @@ use warnings;
 use utf8;
 use POSIX qw{strftime};
 
-#use lib '/usr/lib64/nagios/plugins/check_mssql/lib';
-use lib '/home/monitor/check_mssql/lib';
+use lib '/opt/contrib/plugins/check_mssql/lib';
 
 #===============================================================================
 # MODULES

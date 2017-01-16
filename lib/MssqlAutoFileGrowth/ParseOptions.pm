@@ -58,7 +58,7 @@ sub parse {
 	    &verbose($caller,'$Options{' . $opt . '} defined') if ( $Options{'v'} or $Options{'verbose'} ); 
 	}
 
-    # 
+    	# 
 	# hostname
 	#
 	&error($caller,'$Options{hostname} must be defined') if not ( $Options{'H'} or $Options{'hostname'} ); 
@@ -66,7 +66,7 @@ sub parse {
 	if ($Options{'hostname'}) { $Options{'H'} = $Options{'hostname'} };
 	&verbose($caller,'$Options{hostname} = ' . $Options{'hostname'}  ) if ( $Options{'v'} or $Options{'verbose'} ); 
 
-    # 
+    	# 
 	# db
 	#
 	&error($caller,'$Options{db} must be defined') if not ( $Options{'D'} or $Options{'db'} ); 
@@ -74,7 +74,7 @@ sub parse {
 	if ($Options{'db'}) { $Options{'D'} = $Options{'db'} };
 	&verbose($caller,'$Options{db} = ' . $Options{'db'}  ) if ( $Options{'v'} or $Options{'verbose'} ); 
 
-    # 
+    	# 
 	# port
 	#
 	&error($caller,'$Options{port} must be defined') if not ( $Options{'P'} or $Options{'port'} ); 

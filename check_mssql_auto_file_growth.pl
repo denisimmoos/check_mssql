@@ -23,8 +23,7 @@ use warnings;
 use utf8;
 use POSIX qw{strftime};
 
-#use lib '/usr/lib64/nagios/plugins/check_mssql/lib';
-use lib '/home/monitor/check_mssql/lib';
+use lib '/opt/contrib/plugins/check_mssql/lib';
 
 #===============================================================================
 # MODULES
@@ -38,8 +37,8 @@ use Data::Dumper;
 #===============================================================================
 
 my %Options = ();
-$Options{'print-options'} = 0;
-$Options{'only-critical'} = 0;
+$Options{'print-options'} = 1;
+$Options{'only-critical'} = 1;
 $Options{'odbc-string'} = 'ODBC Driver 11 for SQL Server';
 
 #===============================================================================

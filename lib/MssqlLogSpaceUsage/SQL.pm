@@ -53,28 +53,48 @@ sub sql {
 
 	#use Data::Dumper;
 
-	my $sql = "
-	       SELECT 
-		   [database_id]
-	      ,[total_log_size_in_bytes]
-		  ,[used_log_space_in_bytes]
-		  ,([total_log_size_in_bytes] - [used_log_space_in_bytes]) AS free_log_space_in_bytes
-		  ,[used_log_space_in_percent]
-		  ,(100-[used_log_space_in_percent]) AS free_log_space_in_percent
-		  ,[log_space_in_bytes_since_last_backup]
-		  FROM [$Options{'db'}].[sys].[dm_db_log_space_usage]
+	my $sql_databases = "
+		SELECT 
+		[master].[sys].[databases].name
+		FROM [$Options{'db'}].[sys].[databases]
 	";
+				
+	my $sql;
+	my $sth;
+
 
 	my $dbh = DBI->connect("dbi:ODBC:driver=$Options{'odbc-string'};server=tcp:$Options{'hostname'},$Options{'port'};database=$Options{'db'};MARS_Connection=yes;", $Options{'username'}, $Options{'password'} )
-    or die( $DBI::errstr . "\n");
+    	or die( $DBI::errstr . "\n");
 
-    my $sth = $dbh->prepare($sql);
-       $sth->execute;
-	while ( my $row = $sth->fetchrow_hashref ) {
-		$Options{'MssqlLogSpaceUsage'}{$row->{'database_id'}} = $row;
-		#print Dumper($Options{'MssqlLogSpaceUsage'});
+    	my $sth_databases = $dbh->prepare($sql_databases);
+       	$sth_databases->execute;
+
+
+	use Data::Dumper;
+	while ( my $row = $sth_databases->fetchrow_hashref ) {
+
+		
+		$sql = "
+		       SELECT 
+			   [database_id]
+			  ,[total_log_size_in_bytes]
+			  ,[used_log_space_in_bytes]
+			  ,([total_log_size_in_bytes] - [used_log_space_in_bytes]) AS free_log_space_in_bytes
+			  ,[used_log_space_in_percent]
+			  ,(100-[used_log_space_in_percent]) AS free_log_space_in_percent
+			  ,[log_space_in_bytes_since_last_backup]
+			  FROM [$row->{'name'}].[sys].[dm_db_log_space_usage]
+		";
+		
+    		$sth = $dbh->prepare($sql);
+       		$sth->execute;
+
+		while ( my $sub_row = $sth->fetchrow_hashref ) {
+			$Options{'MssqlLogSpaceUsage'}{$row->{'name'}} = $sub_row
+		}
+		
 	}
-	
+
 	return  %Options;
 
 }
