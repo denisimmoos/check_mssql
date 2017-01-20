@@ -47,26 +47,54 @@ sub verbose {
 sub sql {
 
 	use Data::Dumper;
-    my $self = shift;
-    my $ref_Options = shift;
-    my %Options = %{ $ref_Options };
-    my $caller = (caller(0))[3];
+	my $self = shift;
+	my $ref_Options = shift;
+	my %Options = %{ $ref_Options };
+	my $caller = (caller(0))[3];
 
+	my $sql_databases = "
+                SELECT
+                [master].[sys].[databases].name
+                FROM [$Options{'db'}].[sys].[databases]
+        ";
 
-	my $sql = "
-	SELECT * 
-	FROM [$Options{'db'}].[sys].[databases]
-	";
+        if ($Options{'exclude-db'}) {
+                my @exclude = split(/\,/,$Options{'exclude-db'});
+                my $exclude = join ',', map qq('$_'), @exclude;
+                $sql_databases .= "WHERE [master].[sys].[databases].name NOT IN ( $exclude )";
+        }
+
+	
 
 	my $dbh = DBI->connect("dbi:ODBC:driver=$Options{'odbc-string'};server=tcp:$Options{'hostname'},$Options{'port'};database=$Options{'db'};MARS_Connection=yes;", $Options{'username'}, $Options{'password'} )
     or die( $DBI::errstr . "\n");
 
-    my $sth = $dbh->prepare($sql);
-       $sth->execute;
-	while ( my $row = $sth->fetchrow_hashref ) {
+
+	my $sth_databases = $dbh->prepare($sql_databases);
+        $sth_databases->execute;
+
+	my $sql;
+	my $sth;
+
+        while ( my $row = $sth_databases->fetchrow_hashref ) {
+
 		print Dumper($row) if ($Options{'verbose'} or $Options{'v'});
-		$Options{'MssqlOptions'} = $row;
+
+		$sql = "
+	
+			SELECT * 
+			FROM [$row->{'name'}].[sys].[databases]
+		";
+
+		$sth = $dbh->prepare($sql);
+                $sth->execute or error("Database [ $row->{'name'} ] - FAILED\n");
+
+                while ( my $sub_row = $sth->fetchrow_hashref ) {
+			print Dumper($sub_row) if ($Options{'verbose'} or $Options{'v'});
+			$Options{'MssqlOptions'}{$row->{'name'}} = $sub_row;
+                }
 	}
+
 	return  %Options;
 }
 

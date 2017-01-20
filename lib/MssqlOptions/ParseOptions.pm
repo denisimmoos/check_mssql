@@ -52,9 +52,10 @@ sub parse {
 	foreach my $opt (keys(%Options)) {
 					   
 		next if ($opt =~ /print-options/ );
+		next if ($opt =~ /exclude-db/ );
 		
 		&error($caller,'$Options{' . $opt . '} not defined') if not ($Options{$opt}); 
-	    &verbose($caller,'$Options{' . $opt . '} defined') if ( $Options{'v'} or $Options{'verbose'} ); 
+	    	&verbose($caller,'$Options{' . $opt . '} defined') if ( $Options{'v'} or $Options{'verbose'} ); 
 	}
 
     # 
@@ -88,6 +89,25 @@ sub parse {
 	if ($Options{'O'}) { $Options{'options'} = $Options{'O'} };
 	if ($Options{'options'}) { $Options{'O'} = $Options{'options'} };
 	&verbose($caller,'$Options{options} = ' . $Options{'options'}  ) if ( $Options{'v'} or $Options{'verbose'} ); 
+
+        &error($caller,'A default Option set must be defined [DEFAULT[option1:3;option2:3]') if (not grep( /.*DEFAULT\[.*\].*/,$Options{'options'}) );
+
+
+        my @options  = split(/\,/,$Options{'options'});
+        my @sub_options;
+
+
+	foreach my $option (@options) {
+		
+		@sub_options = split(/\[/,$option);
+		$Options{'sub_options'}{$sub_options[0]}{'name'} = $sub_options[0];
+		$Options{'sub_options'}{$sub_options[0]}{'options'} = $sub_options[1];
+		$Options{'sub_options'}{$sub_options[0]}{'options'} =~ s/\]$//g;
+		
+		&verbose($caller,'$Options{sub_options}{db}{name} = ' . $Options{'sub_options'}{$sub_options[0]}{'name'}  ) if ( $Options{'v'} or $Options{'verbose'} );
+		&verbose($caller,'$Options{sub_options}{db}{options} = ' . $Options{'sub_options'}{$sub_options[0]}{'options'}  ) if ( $Options{'v'} or $Options{'verbose'} );
+	} 
+
 	
 	#
 	# authfile
@@ -95,8 +115,8 @@ sub parse {
 	if ( not ( $Options{'username'} and  $Options{'password'} )) {
 	
 		&error($caller,'$Options{authfile} must be defined') if not ($Options{'authfile'} or $Options{'A'} ); 
-	    if ($Options{'A'}) { $Options{'authfile'} = $Options{'A'} };
-	    if ($Options{'authfile'}) { $Options{'A'} = $Options{'authfile'} };
+	    	if ($Options{'A'}) { $Options{'authfile'} = $Options{'A'} };
+	    	if ($Options{'authfile'}) { $Options{'A'} = $Options{'authfile'} };
 		&error($caller,'$Options{authfile} not a file') if not ( -f $Options{'authfile'} ); 
 		&error($caller,'$Options{authfile} cannot be defined together with --username') if ( $Options{'username'} ); 
 		&error($caller,'$Options{authfile} cannot be defined together with --password') if ( $Options{'password'} ); 

@@ -97,6 +97,7 @@ GetOptions(\%Options,
     'D:s',  'db:s',
     'P:i',  'port:i',
     'O:s',  'options:s',
+            'exclude-db:s',      #
             'odbc-string:s',      #
             'print-options:i',      #
             'username:s',      #
@@ -142,29 +143,38 @@ my %NagiosStatus = (
     3       => 'UNKNOWN',
 );
 
-my @Options= split(/,/,$Options{'options'});
+my @Options;
 my $key;
 my $value;
 my @CRITICAL = ();
 
-foreach my $option (@Options) {
+foreach my $db (keys $Options{'MssqlOptions'}) {
 
 
-	($key,$value)= split(/\:/,$option);
-
-	if ( not exists( $Options{'MssqlOptions'}{$key}) ){
-		$Options{'nagios-msg'} = $NagiosStatus{2} . " - [$key] not valid";
-		$Options{'nagios-status'} = $NagiosStatus{'CRITICAL'};
-		die "$Options{'nagios-msg'}" . "\n";
+	if ($Options{'sub_options'}{$db}{'name'}) {
+		@Options = split(/\;/,$Options{'sub_options'}{$db}{'options'});
+	} else {
+		@Options = split(/\;/,$Options{'sub_options'}{'DEFAULT'}{'options'});
 	}
 
-	if ( $Options{'MssqlOptions'}{$key} ne $value ) {
-		push(@CRITICAL,1);
-		$Options{'nagios-msg'} .= "\n" . $NagiosStatus{2} . " - [$key] != [$value]";
-	} else {
-		$Options{'nagios-msg'} .= "\n" . $NagiosStatus{0} . " - [$key] == [$value]";
-	}	
+	foreach my $option (@Options) {
+		
+		($key,$value)= split(/\:/,$option);
 
+		if ( not exists( $Options{'MssqlOptions'}{$db}{$key}) ){
+			$Options{'nagios-msg'} = $NagiosStatus{2} . " - [$key] not valid";
+			$Options{'nagios-status'} = $NagiosStatus{'CRITICAL'};
+			die "$Options{'nagios-msg'}" . "\n";
+			push(@CRITICAL,"1");
+		}
+
+		if ( $Options{'MssqlOptions'}{$db}{$key} ne $value ) {
+			push(@CRITICAL,1);
+			$Options{'nagios-msg'} .= "\n" . $NagiosStatus{2} . " - [$key] != [$value] [$db]";
+		} else {
+			$Options{'nagios-msg'} .= "\n" . $NagiosStatus{0} . " - [$key] == [$value] [$db]";
+		}	
+	}
 }
 
 #
@@ -179,29 +189,7 @@ if(@CRITICAL) {
 	$Options{'nagios-status'} = $NagiosStatus{'OK'};
 }
 
-if ($Options{'print-options'} ) {
-        print "\n\n";
-        print 'Options: ' ."\n\n";
-        foreach my $option (keys(%Options)) {
-               next if ( $option =~ /password/ );
-               next if ( $option =~ /^[a-zA-Z]$/ );
-
-               if ( $option =~ /MssqlOptions/ ){
-                   foreach my $sub (keys $Options{'MssqlOptions'} ) {
-					   if($Options{'MssqlOptions'}{$sub}) {
-                          print "$sub => $Options{'MssqlOptions'}{$sub}" . "\n";
-					   
-					   } else {
-                          print "$sub =>  undef" . "\n";
-					   }
-				   }
-               } else {
-                   print "$option => $Options{$option}" . "\n";
-               }
-        }
-}
-
-
+# exit status
 exit($Options{'nagios-status'});
 
 __END__
